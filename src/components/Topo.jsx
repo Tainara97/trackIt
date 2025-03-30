@@ -1,13 +1,16 @@
-import logo from "../assets/logo.png";
 import styled from "styled-components";
+import { useContext, useState, useEffect } from "react";
+import UserContext from "../contexts/UserContext";
 
 export default function Topo() {
+    const [user] = useContext(UserContext);
+
     return (
         <EstiloTopo>
             <h1>TrackIt</h1>
-            <img src={logo} alt="logo"/>
+            <img src={user.image} alt="User" />
         </EstiloTopo>
-    )
+    );
 }
 
 const EstiloTopo = styled.div`

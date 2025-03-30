@@ -1,38 +1,58 @@
 import styled from "styled-components";
 import logo from "../assets/biglogo.png";
-import { Link, useNavigate }  from "react-router-dom";
+import { useContext, useState } from "react";
 import axios from "axios";
-import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import UserContext from "../contexts/UserContext";
+import AuthContext from "../contexts/AuthContext";
+import { ThreeDots } from "react-loader-spinner";
 
-export default function Cadastro() {
+
+
+export default function Login() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
-    const [name, setName] = useState("")
-    const [image, setImage] = useState("")
     const navigate = useNavigate()
+    const [user, setUser] = useContext(UserContext)
+    const { setToken } = useContext(AuthContext)
+    const [loading, setLoading] = useState(false)
 
-    function fazerCadastro(e) {
+
+    function fazerLogin(e) {
+        setLoading(true)
         e.preventDefault()
-        const URL = "https://mock-api.bootcamp.respondeai.com.br/api/v2/trackit/auth/sign-up"
-        const body = { email, password, name, image }
+        const URL = "https://mock-api.bootcamp.respondeai.com.br/api/v2/trackit/auth/login";
+        const body = { email, password }
 
         axios.post(URL, body)
-        .then(res => {
-            navigate("/")
-        })
-        .catch(err => console.log(err.response))
+            .then(res => {
+                setToken(res.data.token)
+                localStorage.setItem("token", res.data.token)
+                setUser(res.data)
+                localStorage.setItem("user", res.data)
+                navigate("/habitos")
+                setLoading(false)
+
+            })
+            .catch(err => {
+                alert(err.response.data.message)
+                setLoading(false)
+            })
+
+
     }
 
     return (
         <Container>
-            <Logo src={logo}/>
-            <form onSubmit={fazerCadastro}>
+            <Logo src={logo} />
+            <form onSubmit={fazerLogin}>
                 <Input
                     type="text"
                     placeholder="email"
                     required
                     value={email}
                     onChange={e => setEmail(e.target.value)}
+                    disabled={loading}
                 >
                 </Input>
                 <Input
@@ -41,27 +61,22 @@ export default function Cadastro() {
                     required
                     value={password}
                     onChange={e => setPassword(e.target.value)}
+                    disabled={loading}
                 >
                 </Input>
-                <Input
-                    type="text"
-                    placeholder="nome"
-                    required
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                >
-                </Input>
-                <Input
-                    type="text"
-                    placeholder="foto"
-                    required
-                    value={image}
-                    onChange={e => setImage(e.target.value)}
-                >
-                </Input>
-                <Button type="submit">Cadastrar</Button>
+                <Button type="submit" disabled={loading}>
+                    {loading ? (
+                        <ThreeDots
+                            height="24"
+                            width="24"
+                            color="#fff"
+                            ariaLabel="loading"
+                            wrapperStyle={{ display: "flex", justifyContent: "center", alignItems: "center" 
+                            }}
+                        />
+                    ) : "Entrar"}</Button>
             </form>
-            <StyledLink to="/">Já possui uma conta? Faça login</StyledLink>
+            <StyledLink to="/cadastro">Não tem uma conta? Cadastre-se!</StyledLink>
         </Container>
     )
 }
@@ -120,6 +135,10 @@ const Button = styled.button`
     font-size: 20px;
     color: #FFFFFF;
     padding: 5px;
+    &:disabled {
+        background-color: #a6cff7;
+        cursor: not-allowed;
+    }
 
 `
 const StyledLink = styled(Link)`
